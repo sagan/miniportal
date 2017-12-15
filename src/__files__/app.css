@@ -1,0 +1,26 @@
+
+
+body > div {
+	width: 100%;
+}
+
+.success {
+	color: green;
+}
+
+.error {
+	color: red;
+}
+
+
+h1 {
+	font-size: 80px;
+}
+
+* {
+	font-size: 50px;
+}
+
+button {
+	font-size: 70px;
+}
