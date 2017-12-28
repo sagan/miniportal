@@ -6,21 +6,24 @@
 
 int PORT = 8080;
 
-void handleClearAndExit(int signal) {
+void clean() {
 	char command[256];
-	
-	// keep authed sessions ?
-	// sprintf(command, "ipset flush portal");
-	// system(command);
-	
-	sprintf(command, "iptables -t nat -D PREROUTING ! -d 192.168.0.0/16 "
-		"-p tcp -m set ! --match-set portal src -j REDIRECT --to-port %d", PORT);
+
 	system(command);
-	
+	sprintf(command, "iptables -t nat -F portal_prerouting");
+	system(command);
+	sprintf(command, "iptables -t nat -D PREROUTING -j portal_prerouting");
+	system(command);
+}
+
+void handleClearAndExit(int signal) {
+	clean();	
 	exit(0);
 }
 
 int main(int argc, char* argv[]) {
+	clean();
+
 	char command[256];
 	char* v;
 	
@@ -28,28 +31,43 @@ int main(int argc, char* argv[]) {
 	if( v ) {
 		PORT = atoi(v);
 	}
-	
-	sprintf(command, "iptables -t nat -I PREROUTING 1 ! -d 192.168.0.0/16 "
-		"-p tcp -m set ! --match-set portal src -j REDIRECT --to-port %d", PORT);
+
+	system("ipset create portal_wl hash:ip");
+	sprintf(command, "iptables -t nat -N portal_prerouting");
+	system(command);
+	sprintf(command, "iptables -t nat -I PREROUTING 1 -j portal_prerouting");
+	system(command);
+	sprintf(command, "iptables -t nat -A portal_prerouting -m set --match-set portal_wl src -j RETURN");
+	system(command);
+	sprintf(command, "iptables -t nat -A portal_prerouting -j REDIRECT --to-port %d", PORT);
 	system(command);
 	
 	signal(SIGHUP, handleClearAndExit);
 	signal(SIGINT, handleClearAndExit);
 	signal(SIGQUIT, handleClearAndExit);
-	signal(SIGTERM, handleClearAndExit);
+	signal(SIGTERM, handleClearAndExit);	
 	
-	system("ipset create portal hash:ip");
 	return acceptConnectionsUntilStoppedFromEverywhereIPv4(NULL, PORT);
 }
 
+// why not use ipset hash:mac ? Because some router ROM build do not include hash:mac ipset support
+
 struct Response* createResponseForRequest(const struct Request* request, struct Connection* connection) {
 	// printf("Host %s connected\n", connection->remoteHost);
+	char req_mac[32] = {0}, buf[128], FILE* pipe, size_t len;
+
 	if (0 == strcmp(request->pathDecoded, "/auth")) {
-		char command[128];
-		sprintf(command, "ipset add portal %s", connection->remoteHost);
-		system(command);
-		int status = 0;
-		return responseAllocWithFormat(200, "OK", "application/json", "{\"status\": %d}", status);
+		sprintf(buf, "cat /proc/net/arp | grep %s | awk '{print $4}'", connection->remoteHost);
+		pipe = popen(buf, "r");
+		if( !pipe ) {
+			return responseAllocWithFormat(503, "Error", "application/json", "{}");
+		}
+		if( ! (len = fread(buf, sizeof(buf), 1, pipe) ) ) {
+			return responseAllocWithFormat(400, "Error", "application/json", "{}");
+		}
+		buf[len] = 0;
+		printf("Got req mac: %s\n", buf);
+		return responseAllocWithFormat(200, "OK", "application/json", "{}");
 	}
 	/* Serve files from the current directory */
 	if (request->pathDecoded == strstr(request->pathDecoded, "/__files__")) {
