@@ -7,8 +7,9 @@
 int PORT = 8080;
 
 void clean() {
-  system("iptables -t nat -F portal_prerouting");
+  system("iptables -t nat -F portal_prerouting_a");
   system("iptables -t nat -D PREROUTING -j portal_prerouting");
+  system("iptables -t nat -D portal_prerouting -j portal_prerouting_a");
 }
 
 void handleClearAndExit(int signal) {
@@ -33,13 +34,14 @@ int main(int argc, char* argv[]) {
 
   system("ipset create portal_wl hash:ip");
   system("iptables -t nat -N portal_prerouting");
-  system("iptables -t nat -N portal_prerouting_pre");
+  system("iptables -t nat -N portal_prerouting_a");
+
   system("iptables -t nat -I PREROUTING 1 -j portal_prerouting");
-  system("iptables -t nat -A portal_prerouting -j portal_prerouting_pre");
-  system("iptables -t nat -A portal_prerouting -m set --match-set portal_wl src -j RETURN");
-  system("iptables -t nat -A portal_prerouting -d 192.168.0.0/16 -j RETURN");
-  system("iptables -t nat -A portal_prerouting -d 10.0.0.0/8 -j RETURN");
-  sprintf(command, "iptables -t nat -A portal_prerouting -p tcp -j REDIRECT --to-port %d", PORT);
+  system("iptables -t nat -A portal_prerouting -j portal_prerouting_a");
+  system("iptables -t nat -A portal_prerouting_a -m set --match-set portal_wl src -j RETURN");
+  system("iptables -t nat -A portal_prerouting_a -d 192.168.0.0/16 -j RETURN");
+  system("iptables -t nat -A portal_prerouting_a -d 10.0.0.0/8 -j RETURN");
+  sprintf(command, "iptables -t nat -A portal_prerouting_a -p tcp -j REDIRECT --to-port %d", PORT);
   system(command);
 
   return acceptConnectionsUntilStoppedFromEverywhereIPv4(NULL, PORT);
@@ -66,12 +68,12 @@ struct Response* createResponseForRequest(const struct Request* request, struct 
       return responseAllocWithFormat(400, "Bad Request", "application/json", "{}");
     }
     
-    sprintf(buf, "iptables -t nat -C portal_prerouting -m mac --mac-source %s -j RETURN", mac);
+    sprintf(buf, "iptables -t nat -C portal_prerouting_a -m mac --mac-source %s -j RETURN", mac);
     status = system(buf);
     
     if (0 == strcmp(request->method, "POST") || 0 == strcmp(request->method, "PUT")) {
       if( status ) {
-        sprintf(buf, "iptables -t nat -I portal_prerouting 2 -m mac --mac-source %s -j RETURN", mac);
+        sprintf(buf, "iptables -t nat -I portal_prerouting_a 2 -m mac --mac-source %s -j RETURN", mac);
         system(buf);
       }
       return responseAllocWithFormat(200, "OK", "application/json", "{}");

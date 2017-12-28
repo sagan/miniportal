@@ -43,8 +43,6 @@ ipset add portal_wl 1.2.3.4
 ### 2. Mac 白名单
 
 ```
-iptables -t nat -N portal_prerouting_pre
-iptables -t nat -A portal_prerouting_pre -m mac --mac-source 00:00:00:00:00:00 -j RETURN
+iptables -t nat -N portal_prerouting
+iptables -t nat -I portal_prerouting 1 -m mac --mac-source 00:00:00:00:00:00 -j RETURN
 ```
-
-
