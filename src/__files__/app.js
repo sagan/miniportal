@@ -41,7 +41,7 @@ var AppComponent = Vue.extend({
           self.isAuthed = true;
         }
       };
-      oReq.send('');
+      oReq.send('username=test');
     }
   }
 });
