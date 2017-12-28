@@ -10,12 +10,14 @@
 * 只需要主程序 + 一些静态文件即可在设备上运行。
 * 主程序是单个可执行文件，（除标准C库）无任何依赖。
 * 主程序编译后大小仅为几十KB。加上静态文件后整个程序大小不超过 200KB。
-* 对设备系统要求低，只需要有 ipset + iptables 即可跑。
+* 对设备系统要求低，只需要有 iptables 等即可跑。
 * 零配置。
 
 # Requirements
 
-运行设备需要有 ipset（需要支持 hash:ip）、iptables（需要支持 -m mac）。
+运行设备需要有 iptables（需要支持 -m mac）；需要有 cat、grep、awk。
+
+如果使用 IP 白名单功能，设备需要有 ipset（需要支持 hash:ip）并且 iptables 需要支持 -m set。
 
 # Deploy & Run
 
@@ -31,7 +33,7 @@
 
 可以设置无需验证即可上网的白名单，有两种方式。需要每次设备启动时执行一次脚本。
 
-### 1. IP 白名单（需要系统 iptables 支持 -m set）
+### 1. IP 白名单（需要系统有 ipset 并且 iptables 支持 -m set）
 
 ```
 ipset create portal_wl hash:ip
