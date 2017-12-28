@@ -17,3 +17,24 @@
 
 3. 在这个目录执行 ./miniportal 即可。
 
+# Config
+
+## 白名单
+
+可以设置无需验证即可上网的白名单，有两种方式。需要每次设备启动时执行一次脚本。
+
+### 1. IP 白名单
+
+```
+ipset create portal_wl hash:ip
+ipset add portal_wl 1.2.3.4
+```
+
+### 2. Mac 白名单
+
+```
+iptables -t nat -N portal_prerouting_pre
+iptables -t nat -A portal_prerouting_pre -m mac --mac-source 00:00:00:00:00:00 -j RETURN
+```
+
+
