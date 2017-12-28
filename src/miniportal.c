@@ -9,11 +9,8 @@ int PORT = 8080;
 void clean() {
 	char command[256];
 
-	system(command);
-	sprintf(command, "iptables -t nat -F portal_prerouting");
-	system(command);
-	sprintf(command, "iptables -t nat -D PREROUTING -j portal_prerouting");
-	system(command);
+	system("iptables -t nat -F portal_prerouting");
+	system("iptables -t nat -D PREROUTING -j portal_prerouting");
 }
 
 void handleClearAndExit(int signal) {
@@ -33,13 +30,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	system("ipset create portal_wl hash:ip");
-	sprintf(command, "iptables -t nat -N portal_prerouting");
-	system(command);
-	sprintf(command, "iptables -t nat -I PREROUTING 1 -j portal_prerouting");
-	system(command);
-	sprintf(command, "iptables -t nat -A portal_prerouting -m set --match-set portal_wl src -j RETURN");
-	system(command);
-	sprintf(command, "iptables -t nat -A portal_prerouting -j REDIRECT --to-port %d", PORT);
+	system("iptables -t nat -N portal_prerouting");
+	system("iptables -t nat -N portal_prerouting_pre");
+	system("iptables -t nat -I PREROUTING 1 -j portal_prerouting");
+	system("iptables -t nat -A portal_prerouting -j portal_prerouting_pre");
+	system("iptables -t nat -A portal_prerouting -m set --match-set portal_wl src -j RETURN");
+	sprintf(command, "iptables -t nat -A portal_prerouting -p tcp -j REDIRECT --to-port %d", PORT);
 	system(command);
 	
 	signal(SIGHUP, handleClearAndExit);
@@ -54,7 +50,9 @@ int main(int argc, char* argv[]) {
 
 struct Response* createResponseForRequest(const struct Request* request, struct Connection* connection) {
 	// printf("Host %s connected\n", connection->remoteHost);
-	char req_mac[32] = {0}, buf[128], FILE* pipe, size_t len;
+	char buf[128] = {0}, mac[18] = {0}; // 17: 00:00:00:00:00:00 type mac address length
+	FILE* pipe;
+	size_t len;
 
 	if (0 == strcmp(request->pathDecoded, "/auth")) {
 		sprintf(buf, "cat /proc/net/arp | grep %s | awk '{print $4}'", connection->remoteHost);
@@ -62,11 +60,12 @@ struct Response* createResponseForRequest(const struct Request* request, struct 
 		if( !pipe ) {
 			return responseAllocWithFormat(503, "Error", "application/json", "{}");
 		}
-		if( ! (len = fread(buf, sizeof(buf), 1, pipe) ) ) {
+
+		if( len = fread(mac, sizeof(mac) - 1, 1, pipe) == 0 ) {
 			return responseAllocWithFormat(400, "Error", "application/json", "{}");
 		}
-		buf[len] = 0;
-		printf("Got req mac: %s\n", buf);
+		sprintf(buf, "iptables -t nat -I portal_prerouting 3 -m mac --mac-source %s -j RETURN", mac);
+		system(buf);
 		return responseAllocWithFormat(200, "OK", "application/json", "{}");
 	}
 	/* Serve files from the current directory */
