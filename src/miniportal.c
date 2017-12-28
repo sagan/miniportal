@@ -7,8 +7,6 @@
 int PORT = 8080;
 
 void clean() {
-	char command[256];
-
 	system("iptables -t nat -F portal_prerouting");
 	system("iptables -t nat -D PREROUTING -j portal_prerouting");
 }
