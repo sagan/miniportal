@@ -34,13 +34,14 @@ var AppComponent = Vue.extend({
     auth: function (event) {
       var self = this;
       var oReq = new XMLHttpRequest();
-      oReq.addEventListener("load", reqListener);
       oReq.open("POST", "/__auth__");
-      oReq.send();
-
-      function reqListener() {
-        self.isAuthed = true;
-      }
+      oReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      oReq.onreadystatechange = function() {
+        if(oReq.readyState == XMLHttpRequest.DONE) {
+          self.isAuthed = true;
+        }
+      };
+      oReq.send('');
     }
   }
 });
