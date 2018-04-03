@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
+#include <libgen.h>
 
 int PORT = 8080;
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[]) {
   char* v;
   
   readlink("/proc/self/exe", command, sizeof(command) - 1);
-  chdir(command);
+  chdir(dirname(command));
 
   v = getenv("PORT");
   if( v ) {
