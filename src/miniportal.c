@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
 
 int PORT = 8080;
 
@@ -24,9 +25,12 @@ int main(int argc, char* argv[]) {
   signal(SIGQUIT, handleClearAndExit);
   signal(SIGTERM, handleClearAndExit);
 
-  char command[256];
+  char command[256] = {0};
   char* v;
   
+  readlink("/proc/self/exe", command, sizeof(command) - 1);
+  chdir(command);
+
   v = getenv("PORT");
   if( v ) {
     PORT = atoi(v);
