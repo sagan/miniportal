@@ -3,7 +3,7 @@
 
 一个极简的 C 写的单可执行文件零（外部）依赖 [Captive portal](https://en.wikipedia.org/wiki/Captive_portal) 程序原型。
 
-本程序适合放在家用路由器上跑，在斐讯 K2 路由潘多拉固件（PandoraBox 17.09 R7.3 Mod By LEAN）上测试通过。
+本程序适合放在家用路由器上跑，在斐讯 K2 路由（mt7620 SOC）潘多拉固件（PandoraBox 17.09 R7.3 Mod By LEAN）上测试通过。
 
 本程序特点:
 
