@@ -41,7 +41,7 @@ var AppComponent = Vue.extend({
         	'<p>Loading...</p>' +
         '</div>' +
         '<div>' +
-            '<h2>本 Wifi 的优点和特色功能</h2>' +
+            '<h2>本 Wi-Fi 的优点和特色功能</h2>' +
             '<ul>' +
                 '<li>2.4G 和 5G 双频，速率高达 300 + 866 Mbps</li>' +
                 '<li>自动国际网络加速，自由地访问任何网站</li>' +
