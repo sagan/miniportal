@@ -24,8 +24,8 @@ var AppComponent = Vue.extend({
     };
     oReq.send('username=test');
   },
-  template: '<div><h1>欢迎使用 Freedom Wifi</h1>' + 
-        '<div><p>本 Wifi 由小野大神架设并维护。点击“立即连接”按钮开始上网。</p></div>' + 
+  template: '<div><h1>欢迎使用 Freedom Wi-Fi</h1>' +
+        '<div><p>本 Wi-Fi 由小野大神架设并维护。点击“立即连接”按钮开始上网。</p></div>' +
         '<div v-if="isInitted">' + 
 	        '<div v-if="!isAuthed">' +
 	            '<button v-on:click="auth" type="button">立即连接</button>' +
@@ -45,6 +45,7 @@ var AppComponent = Vue.extend({
             '<ul>' +
                 '<li>2.4G 和 5G 双频，速率高达 300 + 866 Mbps</li>' +
                 '<li>自动国际网络加速，自由地访问任何网站</li>' +
+                '<li>集成 KMS 服务器，自动激活客户端的 Windows / Office 实例</li>' +
             '</ul>' +
         '</div>' + 
     '</div>',
