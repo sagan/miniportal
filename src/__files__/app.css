@@ -1,26 +1,56 @@
-
-
 body > div {
-	width: 100%;
+  width: 100%;
 }
 
 .success {
-	color: green;
+  color: green;
 }
 
 .error {
-	color: red;
+  color: red;
 }
 
-
 h1 {
-	font-size: 80px;
+  font-size: 40px;
 }
 
 * {
-	font-size: 50px;
+  font-size: 30px;
 }
 
 button {
-	font-size: 70px;
+  border: 0;
+  width: 270px;
+  padding: 10px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  display: block;
+  text-decoration: none;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.2em;
+}
+button:active {
+  margin-top: 22px;
+  margin-bottom: -2px;
+}
+.main-button {
+  color: #fff;
+  background: #8bbc37;
+  -webkit-box-shadow: 0 3px 1px #64950d;
+  -moz-box-shadow: 0 3px 1px #64950d;
+  box-shadow: 0 3px 1px #64950d;
+}
+.main-button:hover {
+  background: #85b237;
+}
+.main-button:active {
+  -webkit-box-shadow: 0 1px 1px #64950d;
+  -moz-box-shadow: 0 1px 1px #64950d;
+  box-shadow: 0 1px 1px #64950d;
+}
+
+p, h1, h2, h3 {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
