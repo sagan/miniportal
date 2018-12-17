@@ -61,7 +61,7 @@ function render(data) {
             }">个人网站</a>
             ${
               data.ownerTwitter
-                ? ` 或 <a href=="https://twitter.com/${
+                ? ` 或 <a href="https://twitter.com/${
                     data.ownerTwitter
                   }">Twitter</a>`
                 : ""
