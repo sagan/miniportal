@@ -1,40 +1,45 @@
-
 var rootEl = document.querySelector("#root");
 var data = {
   isInitted: false,
-  isAuthed: false,
+  isAuthed: false
 };
 
-(async () => {
+(function() {
   rootEl.innerHTML = render(data);
-
-  let res = await fetch('/__auth__');
-  data.isInitted = true;
-  if( res.status != 200 ) {
-    data.isAuthed = false;
-  } else {
-    data.isAuthed = true;
-  }
-  setData();
+  fetch("/__auth__").then(function(res) {
+    data.isInitted = true;
+    if (res.status != 200) {
+      data.isAuthed = false;
+    } else {
+      data.isAuthed = true;
+    }
+    setData();
+  });
 })();
-
 
 function render(data) {
   return `
   <div>
-    <h1>欢迎使用 Freedom Wi-Fi</h1><div>
-    ${!data.isAuthed ?
-      `<p>本 Wi-Fi 由 sagan 架设并维护。点击“立即连接”按钮开始上网。</p>` :
-      `<p class="success">恭喜，您已经连接到自由的 Internet</p>`
-    }
-  </div>
-  ${ data.isInitted ? 
-    `<div>
-    ${ !data.isAuthed ? 
-      `<div>
+    <h1>欢迎使用 Freedom Wi-Fi</h1>
+    <div>
+      ${
+        !data.isAuthed
+          ? `<p>本 Wi-Fi 由 sagan 架设并维护。点击“立即连接”按钮开始上网。</p>`
+          : `<p class="success">恭喜，您已经连接到自由的 Internet</p>`
+      }
+    </div>
+  ${
+    data.isInitted
+      ? `
+    <div>
+      ${
+        !data.isAuthed
+          ? `
+      <div>
         <button class="main-button" onclick="auth()" type="button">立即连接</button>
-      </div>` :
-      `<div>
+      </div>`
+          : `
+      <div>
         <p>
           <i>欢迎访问本 Wifi 维护者 sagan 的 <a href="https://sagan.me/">Blog</a>。
             如果您从本服务受益，请考虑捐助我们。捐助的用户将可以免验证使用本服务。
@@ -50,12 +55,12 @@ function render(data) {
           </div>
         </p>
       </div>`
-    }
-  </div>` : 
-  `<div>
-    <p>Loading...
-    </p>
-  </div>`
+      }
+    </div>`
+      : `
+    <div>
+      <p>Loading...</p>
+    </div>`
   }
     <div>
       <h2>本 Wi-Fi 的优点和特色功能</h2>
@@ -68,19 +73,27 @@ function render(data) {
   </div>`;
 }
 
-function setData(newData = {}) {
-  Object.assign(data, newData);
+function setData(newData) {
+  Object.keys(newData || {}).forEach(function(key) {
+    data[key] = newData[key];
+  });
   rootEl.innerHTML = render(data);
 }
 
 function auth(event) {
-  var oReq = new XMLHttpRequest();
-  oReq.open("POST", "/__auth__");
-  oReq.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  oReq.onreadystatechange = function() {
-    if(oReq.readyState == XMLHttpRequest.DONE) {
-      setData({isAuthed: true});
+  fetch("/__auth__", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "username=test"
+  }).then(
+    function(res) {
+      if (res.status != 200) throw new Error(`Server Error ${res.status}`);
+      setData({ isAuthed: true });
+    },
+    function(err) {
+      alert(`出错了: ${err}`);
     }
-  };
-  oReq.send('username=test');
+  );
 }
