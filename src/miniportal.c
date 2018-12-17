@@ -1,12 +1,23 @@
 #include "EmbeddableWebServer.h"
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
 #include <libgen.h>
 
+struct Response* responseAllocRedirect(const char* host) {
+  struct Response* response = responseAlloc(302, "Found", "text/html", 0);
+  response->extraHeaders = (char*)malloc(64);
+  sprintf(response->extraHeaders, "Location: http://%s/\r\n", host);
+  heapStringAppendFormat(&response->body, "Redirect to http://%s/", host);
+  return response;
+}
+
 int PORT = 8080;
+char HOSTNAME[32] = {0};
+char HOST[40] = {0};
 
 void clean() {
   system("iptables -t nat -F portal_prerouting_a");
@@ -20,22 +31,37 @@ void handleClearAndExit(int signal) {
 }
 
 int main(int argc, char* argv[]) {
+  int opt;
+  char command[256] = {0};
+
+  while ((opt = getopt(argc, argv, "p:h:")) != -1) {
+    switch (opt) {
+      case 'p':
+        PORT = atoi(optarg);
+        break;
+      case 'h':
+        strcpy(HOSTNAME, optarg);
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-p port] [-h hostname]\n", argv[0]);
+        exit(1);
+    }
+  }
+  if( PORT != 80 ) {
+    sprintf(HOST, "%s:%d", HOSTNAME, PORT);
+  } else {
+    strcpy(HOST, HOSTNAME);
+  }
+
+
   clean();
   signal(SIGHUP, handleClearAndExit);
   signal(SIGINT, handleClearAndExit);
   signal(SIGQUIT, handleClearAndExit);
   signal(SIGTERM, handleClearAndExit);
-
-  char command[256] = {0};
-  char* v;
   
   readlink("/proc/self/exe", command, sizeof(command) - 1);
   chdir(dirname(command));
-
-  v = getenv("PORT");
-  if( v ) {
-    PORT = atoi(v);
-  }
 
   system("ipset create portal_wl hash:ip");
   system("iptables -t nat -N portal_prerouting");
@@ -59,6 +85,14 @@ struct Response* createResponseForRequest(const struct Request* request, struct 
   char buf[128] = {0}, mac[18] = {0}; // 17: 00:00:00:00:00:00 type mac address length
   FILE* pipe;
   int status;
+  struct Header* hostHeader;
+
+  if( HOST[0] != 0 &&
+      (hostHeader = headerInRequest("Host", request)) != NULL &&
+      strcmp(hostHeader->value.contents, HOST)
+    ) {
+    return responseAllocRedirect(HOST);
+  }
 
   if (0 == strcmp(request->pathDecoded, "/__auth__")) {
     sprintf(buf, "cat /proc/net/arp | grep %s | awk '{print $4}'", connection->remoteHost);
