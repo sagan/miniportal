@@ -131,5 +131,5 @@ struct Response* createResponseForRequest(const struct Request* request, struct 
   }
   return responseAllocHTML("<!DOCTYPE html><html lang=\"zh-CN\">"
     "<head><meta charset=\"utf-8\"><title>Welcome</title><link rel=\"stylesheet\" href=\"/__files__/app.css\"></head>"
-    "<body><div id=\"root\"></div></body><script src=\"/__files__/app.js\"></script></html>");
+    "<body><div id=\"root\"></div></body><script src=\"/__files__/config.js\"></script><script src=\"/__files__/app.js\"></script></html>");
 }

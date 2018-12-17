@@ -81,3 +81,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+/src/__files__/config.js
+/src/__files__/alipay-donate.png
